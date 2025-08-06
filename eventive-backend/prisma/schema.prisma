@@ -1,0 +1,281 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Multi-tenant organization/tenant model
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logo        String?
+  description String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users   User[]
+  events  Event[]
+  tickets Ticket[]
+
+  @@map("organizations")
+}
+
+enum UserRole {
+  ADMIN
+  ORGANIZER
+  ATTENDEE
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  password       String?
+  avatar         String?
+  emailVerified  DateTime?
+  role           UserRole  @default(ATTENDEE)
+  organizationId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  createdEvents Event[]      @relation("EventCreator")
+  tickets       Ticket[]
+  checkIns      CheckIn[]
+  accounts      Account[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+// OAuth accounts
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum EventType {
+  CONFERENCE
+  WORKSHOP
+  SEMINAR
+  CONCERT
+  MEETUP
+  WEBINAR
+  OTHER
+}
+
+model Event {
+  id              String      @id @default(cuid())
+  title           String
+  slug            String      @unique
+  description     String?     @db.Text
+  shortDescription String?
+  startDate       DateTime
+  endDate         DateTime
+  timezone        String      @default("UTC")
+  location        String?
+  venue           String?
+  address         String?
+  city            String?
+  country         String?
+  latitude        Float?
+  longitude       Float?
+  capacity        Int?
+  status          EventStatus @default(DRAFT)
+  type            EventType   @default(OTHER)
+  isPublic        Boolean     @default(true)
+  isFeatured      Boolean     @default(false)
+  coverImage      String?
+  gallery         String[]
+  tags            String[]
+  website         String?
+  organizationId  String
+  createdById     String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  organization  Organization   @relation(fields: [organizationId], references: [id])
+  createdBy     User           @relation("EventCreator", fields: [createdById], references: [id])
+  ticketTypes   TicketType[]
+  tickets       Ticket[]
+  checkIns      CheckIn[]
+  analytics     EventAnalytic[]
+
+  @@map("events")
+}
+
+enum TicketTypeStatus {
+  ACTIVE
+  INACTIVE
+  SOLD_OUT
+}
+
+model TicketType {
+  id              String           @id @default(cuid())
+  name            String
+  description     String?
+  price           Decimal          @default(0) @db.Decimal(10, 2)
+  currency        String           @default("USD")
+  quantity        Int?
+  maxPerOrder     Int              @default(10)
+  saleStartDate   DateTime?
+  saleEndDate     DateTime?
+  status          TicketTypeStatus @default(ACTIVE)
+  isPublic        Boolean          @default(true)
+  eventId         String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Relations
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tickets Ticket[]
+
+  @@map("ticket_types")
+}
+
+enum TicketStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
+  USED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  STRIPE
+  MIDTRANS
+  FREE
+}
+
+model Ticket {
+  id               String        @id @default(cuid())
+  ticketNumber     String        @unique
+  qrCode           String        @unique
+  firstName        String
+  lastName         String
+  email            String
+  phone            String?
+  price            Decimal       @default(0) @db.Decimal(10, 2)
+  currency         String        @default("USD")
+  status           TicketStatus  @default(PENDING)
+  paymentStatus    PaymentStatus @default(PENDING)
+  paymentMethod    PaymentMethod @default(FREE)
+  paymentId        String?
+  paymentData      Json?
+  notes            String?
+  eventId          String
+  ticketTypeId     String
+  userId           String?
+  organizationId   String
+  purchasedAt      DateTime      @default(now())
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  event        Event      @relation(fields: [eventId], references: [id])
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  user         User?      @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  checkIns     CheckIn[]
+
+  @@map("tickets")
+}
+
+model CheckIn {
+  id        String   @id @default(cuid())
+  ticketId  String
+  eventId   String
+  userId    String?
+  timestamp DateTime @default(now())
+  location  String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  event  Event  @relation(fields: [eventId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id])
+
+  @@unique([ticketId, eventId])
+  @@map("check_ins")
+}
+
+model EventAnalytic {
+  id              String   @id @default(cuid())
+  eventId         String
+  date            DateTime @default(now())
+  views           Int      @default(0)
+  uniqueViews     Int      @default(0)
+  ticketsSold     Int      @default(0)
+  revenue         Decimal  @default(0) @db.Decimal(10, 2)
+  checkIns        Int      @default(0)
+  conversionRate  Float    @default(0)
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, date])
+  @@map("event_analytics")
+}
+
+// Verification tokens for email verification
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
