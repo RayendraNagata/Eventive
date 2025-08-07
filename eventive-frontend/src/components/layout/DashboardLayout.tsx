@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import SignOutModal from '@/components/ui/SignOutModal';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -14,10 +15,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/auth/login');
+      router.push('/auth');
     }
   }, [status, router]);
 
@@ -89,7 +91,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </span>
                 <Button
                   variant="outline"
-                  onClick={() => signOut()}
+                  onClick={() => setShowSignOutModal(true)}
                   className="text-sm"
                 >
                   Sign out
@@ -118,6 +120,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="absolute inset-0 bg-gray-600 opacity-75"></div>
         </div>
       )}
+
+      {/* Sign Out Modal */}
+      <SignOutModal 
+        isOpen={showSignOutModal} 
+        onClose={() => setShowSignOutModal(false)} 
+      />
     </div>
   );
 }

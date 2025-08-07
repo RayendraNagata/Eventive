@@ -49,12 +49,12 @@ export default function HomePage() {
               </a>
             </div>
             <div className="flex items-center space-x-3">
-              <Link href="/auth/login">
+              <Link href="/auth">
                 <Button variant="outline" className="border-gray-400 text-white bg-gray-800 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all duration-200">
                   Sign In
                 </Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/auth">
                 <Button className="bg-sky-600 hover:bg-sky-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
                   Get Started
                 </Button>
@@ -106,7 +106,7 @@ export default function HomePage() {
                   Explore Events
                 </Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/auth">
                 <Button 
                   variant="outline" 
                   size="lg" 
@@ -508,12 +508,12 @@ export default function HomePage() {
             Join thousands of event organizers who trust Eventive for their event management needs.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/auth/register">
+            <Link href="/auth">
               <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 hover:text-gray-900 px-10 py-4 text-lg font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
                 Start Free Trial
               </Button>
             </Link>
-            <Link href="/auth/login">
+            <Link href="/auth">
               <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-10 py-4 text-lg rounded-xl transition-all transform hover:scale-105">
                 Sign In to Dashboard
               </Button>

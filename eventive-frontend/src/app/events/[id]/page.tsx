@@ -145,7 +145,7 @@ export default function EventDetail() {
 
   const handleRegistration = async () => {
     if (!session) {
-      router.push('/auth/login');
+      router.push('/auth');
       return;
     }
     
@@ -207,12 +207,12 @@ export default function EventDetail() {
                 </div>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <Link href="/auth/login">
+                  <Link href="/auth">
                     <Button variant="outline" size="sm">
                       Sign In
                     </Button>
                   </Link>
-                  <Link href="/auth/register">
+                  <Link href="/auth">
                     <Button size="sm" className="bg-sky-600 hover:bg-sky-700">
                       Get Started
                     </Button>
@@ -341,7 +341,7 @@ export default function EventDetail() {
 
                   {registrationStep === 1 ? (
                     <Button
-                      onClick={() => session ? setRegistrationStep(2) : router.push('/auth/login')}
+                      onClick={() => session ? setRegistrationStep(2) : router.push('/auth')}
                       className="w-full h-12 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                     >
                       {session ? 'Register Now' : 'Sign In to Register'}

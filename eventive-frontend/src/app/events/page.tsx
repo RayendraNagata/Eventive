@@ -174,12 +174,12 @@ export default function PublicEvents() {
                 </div>
               ) : (
                 <div className="flex items-center space-x-3">
-                  <Link href="/auth/login">
+                  <Link href="/auth">
                     <Button variant="outline" size="sm">
                       Sign In
                     </Button>
                   </Link>
-                  <Link href="/auth/register">
+                  <Link href="/auth">
                     <Button size="sm" className="bg-sky-600 hover:bg-sky-700">
                       Get Started
                     </Button>

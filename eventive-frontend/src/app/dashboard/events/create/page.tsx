@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import SignOutModal from '@/components/ui/SignOutModal';
 
 // UI Components with relative imports
 const Button = ({ 
@@ -100,11 +101,12 @@ export default function CreateEvent() {
     tags: []
   });
   const [tagInput, setTagInput] = useState('');
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
     if (!session) {
-      router.push('/auth/login');
+      router.push('/auth');
       return;
     }
   }, [session, status, router]);
@@ -211,7 +213,7 @@ export default function CreateEvent() {
               </div>
               <Button
                 variant="outline"
-                onClick={() => router.push('/api/auth/signout')}
+                onClick={() => setShowSignOutModal(true)}
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 Sign Out
@@ -477,6 +479,12 @@ export default function CreateEvent() {
           </div>
         </form>
       </main>
+
+      {/* Sign Out Modal */}
+      <SignOutModal 
+        isOpen={showSignOutModal} 
+        onClose={() => setShowSignOutModal(false)} 
+      />
     </div>
   );
 }
